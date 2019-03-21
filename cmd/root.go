@@ -23,7 +23,10 @@ import (
 	"github.com/spf13/viper"
 )
 
-var cfgFile string
+var (
+	cfgFile string
+	path    string
+)
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -74,7 +77,7 @@ func initConfig() {
 		}
 
 		// Search config in home directory with name ".gitnore" (without extension).
-		path := filepath.Join(home, ".config/gitnore")
+		path = filepath.Join(home, ".config/gitnore")
 		viper.AddConfigPath(path)
 		viper.SetConfigName("init")
 	}
