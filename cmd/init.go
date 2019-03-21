@@ -35,22 +35,38 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := os.MkdirAll(path, 0644)
+		err := os.MkdirAll(path, 0755)
 		if err != nil {
 			fmt.Printf("failed to create configuration path with error: %s\n", err)
 			os.Exit(1)
 		}
-		reader := bufio.NewReader(os.Stdin)
-		fmt.Print("Enter Personal Access Token: ")
-		token, err := reader.ReadString('\n')
-		if err != nil {
-			fmt.Printf("error occurred while reading personal access token: %s\n", err)
+
+		exists := fileExists(cfgFile)
+		if exists {
+			fmt.Printf("configuration file %s already exists, use writeConfig command to overwrite\n", cfgFile)
 			os.Exit(1)
+		}
+
+		_, err = os.OpenFile(cfgFile, os.O_RDONLY|os.O_CREATE, 0755)
+		if err != nil {
+			fmt.Printf("failed to create configuration file with error: %s", err)
+			os.Exit(1)
+		}
+
+		token := viper.GetString("token")
+		if token == "" {
+			reader := bufio.NewReader(os.Stdin)
+			fmt.Print("Enter Personal Access Token: ")
+			token, err = reader.ReadString('\n')
+			if err != nil {
+				fmt.Printf("failed to read personal access token from os.Stdin with error: %s\n", err)
+				os.Exit(1)
+			}
 		}
 		token = strings.TrimSpace(token)
 
 		viper.SetDefault("token", token)
-		err = viper.SafeWriteConfig()
+		err = viper.WriteConfig()
 		if err != nil {
 			fmt.Printf("failed to write configuration with error: %s\n", err)
 			os.Exit(1)
@@ -60,14 +76,14 @@ to quickly create a Cobra application.`,
 
 func init() {
 	rootCmd.AddCommand(initCmd)
+}
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// initCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// initCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+// fileExists reports whether the named file or directory exists.
+func fileExists(name string) bool {
+	if _, err := os.Stat(name); err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+	}
+	return true
 }

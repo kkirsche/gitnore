@@ -60,7 +60,11 @@ func init() {
 	// will be global for your application.
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.config/gitnore/init.yml)")
 	rootCmd.PersistentFlags().StringP("token", "t", "", "Personal access token for authentication")
-	viper.BindPFlag("token", rootCmd.PersistentFlags().Lookup("token"))
+	err := viper.BindPFlag("token", rootCmd.PersistentFlags().Lookup("token"))
+	if err != nil {
+		fmt.Printf("error occurred while binding token flag: %s\n", err)
+		os.Exit(1)
+	}
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -78,6 +82,7 @@ func initConfig() {
 
 		// Search config in home directory with name ".gitnore" (without extension).
 		path = filepath.Join(home, ".config/gitnore")
+		cfgFile = filepath.Join(path, "init.yml")
 		viper.AddConfigPath(path)
 		viper.SetConfigName("init")
 	}

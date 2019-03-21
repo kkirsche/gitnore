@@ -50,7 +50,7 @@ to quickly create a Cobra application.`,
 		token = strings.TrimSpace(token)
 
 		viper.SetDefault("token", token)
-		err = viper.SafeWriteConfig()
+		err = viper.WriteConfig()
 		if err != nil {
 			fmt.Printf("failed to write configuration with error: %s\n", err)
 			os.Exit(1)
