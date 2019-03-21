@@ -15,60 +15,49 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"strings"
 
-	"github.com/google/go-github/github"
-	"github.com/kkirsche/gitnore/gitnore"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"golang.org/x/oauth2"
 )
 
 // addCmd represents the add command
 var addCmd = &cobra.Command{
 	Use:   "add",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Add a gitignore file's contents to the .gitignore file",
+	Long: `Add a remote gitignore file's contents to the .gitignore file
+of the current directory. This method will search the github/gitignore
+repository for a file at the path specified.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Note: This command is case sensitive.
+
+Example usage:
+
+$ gitnore add Global/macOS
+`,
+	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		token := viper.GetString("token")
-		if token == "" {
-			fmt.Println("access token is required to communicate with Github API")
+		err := config.NewGithubAPIClient()
+		if err != nil {
+			fmt.Println(err)
 			os.Exit(1)
 		}
 
-		ctx := context.Background()
-		sts := oauth2.StaticTokenSource(
-			&oauth2.Token{AccessToken: token},
-		)
-		tc := oauth2.NewClient(ctx, sts)
-		client := github.NewClient(tc)
+		for _, arg := range args {
+			if !strings.Contains(arg, ".gitignore") {
+				arg = fmt.Sprintf("%s.gitignore", arg)
+			}
 
-		if !strings.Contains(args[0], ".gitignore") {
-			args[0] = fmt.Sprintf("%s.gitignore", args[0])
+			err := config.DownloadRepositoryFileContents(arg)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
 		}
-
-		gitnore.DownloadRepositoryFileContents(ctx, client, args[0])
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(addCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// addCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// addCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

@@ -27,13 +27,20 @@ import (
 // writeConfigCmd represents the writeConfig command
 var writeConfigCmd = &cobra.Command{
 	Use:   "writeConfig",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Write a new configuration file (unsafe)",
+	Long: `The writeConfig command allows you to write a new configuration file
+without having to manually remove an existing configuration file. As such, this
+command will overwrite any existing configuration you may have. As such, this is
+not considered a "Safe" command.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Personal access token can only be provided via a prompt, the -t / --token flag
+is not supported at this time.
+
+Usage:
+$ gitnore writeConfig
+Enter Personal Access Token:
+`,
+	Args: cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		err := os.MkdirAll(path, 0644)
 		if err != nil {

@@ -27,13 +27,24 @@ import (
 // initCmd represents the init command
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "initialize gitnore's configuration directory and file",
+	Long: `Initialize gitnore's configuration directory and file. If a
+Github personal access token has been provided via the token flag, write this
+to the configuration file, otherwise prompt the user for their personal access
+token.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+In the event that a configuration file already exists at this location, init
+will not overwrite the file.
+
+Usage:
+$ gitnore init -t="my personal access token"
+
+or
+
+$ gitnore init
+Enter Personal Access Token:
+`,
+	Args: cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		err := os.MkdirAll(path, 0755)
 		if err != nil {

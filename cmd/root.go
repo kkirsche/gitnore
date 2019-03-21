@@ -19,6 +19,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/kkirsche/gitnore/gitnore"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -26,20 +27,18 @@ import (
 var (
 	cfgFile string
 	path    string
+
+	config gitnore.Configuration
 )
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "gitnore",
 	Short: "A tool to create gitignore files",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
+	Long: `Gitnore is a CLI tool that empowers developers to easiliy
+build full-featured gitignore files quickly and easily without having
+to remember a whole list of unique patterns.
+`,
 	//	Run: func(cmd *cobra.Command, args []string) { },
 }
 
@@ -91,4 +90,5 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	viper.ReadInConfig()
+	viper.Unmarshal(&config)
 }

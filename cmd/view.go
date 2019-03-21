@@ -15,61 +15,50 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"strings"
 
-	"github.com/google/go-github/github"
-	"github.com/kkirsche/gitnore/gitnore"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"golang.org/x/oauth2"
 )
 
-// viewCmd represents the view command
-var viewCmd = &cobra.Command{
-	Use:   "view",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+// previewCmd represents the view command
+var previewCmd = &cobra.Command{
+	Use:   "preview",
+	Short: "Preview the content of a gitignore file",
+	Long: `Preview the content of a remote gitignore file from the
+Github gitignore repository. This command takes one or more positional
+arguments representing the path of the file which you would like to preview.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Args: cobra.ExactArgs(1),
+Note: This command's arguments are case-sensitive
+
+Usage:
+$ gitnore preview Go
+
+$ gitnore preview Global/macOS
+`,
+	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		token := viper.GetString("token")
-		if token == "" {
-			fmt.Println("access token is required to communicate with Github API")
+		err := config.NewGithubAPIClient()
+		if err != nil {
+			fmt.Println(err)
 			os.Exit(1)
 		}
 
-		ctx := context.Background()
-		sts := oauth2.StaticTokenSource(
-			&oauth2.Token{AccessToken: token},
-		)
-		tc := oauth2.NewClient(ctx, sts)
-		client := github.NewClient(tc)
+		for _, arg := range args {
+			if !strings.Contains(arg, ".gitignore") {
+				arg = fmt.Sprintf("%s.gitignore", arg)
+			}
 
-		if !strings.Contains(args[0], ".gitignore") {
-			args[0] = fmt.Sprintf("%s.gitignore", args[0])
+			err := config.GetRepositoryFileContents(arg)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
 		}
-
-		gitnore.GetRepositoryFileContents(ctx, client, args[0])
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(viewCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// viewCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// viewCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.AddCommand(previewCmd)
 }

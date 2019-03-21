@@ -1,35 +1,38 @@
 package gitnore
 
 import (
-	"context"
 	"fmt"
 	"strings"
 
-	"github.com/google/go-github/github"
+	"github.com/pkg/errors"
 )
 
 // GetRepositoryContents is used to retrieve information about a repository's contents
-func GetRepositoryContents(ctx context.Context, client *github.Client, path string) {
-	_, dir, _, err := client.Repositories.GetContents(ctx, "github", "gitignore", path, nil)
+func (c *Configuration) GetRepositoryContents(path string) error {
+	_, dir, _, err := c.githubAPIClient.Repositories.GetContents(c.ctx, "github", "gitignore", path, nil)
 	if err != nil {
-		fmt.Printf("error occurred while retrieving the github/gitignore repository contents: %s", err)
+		return errors.Wrap(err, "error occurred while retrieving the github/gitignore repository contents")
 	}
+
 	for _, file := range dir {
-		if *file.Type == "dir" {
-			GetRepositoryContents(ctx, client, *file.Path)
+		if file.GetType() == "dir" {
+			c.GetRepositoryContents(file.GetPath())
 			continue
 		}
 
-		if *file.Type == "file" && !strings.Contains(*file.Name, ".gitignore") {
+		if file.GetType() == "file" && !strings.Contains(file.GetName(), ".gitignore") {
 			continue
 		}
 
 		*file.Name = strings.TrimSuffix(*file.Name, ".gitignore")
 
 		if path != "" {
-			fmt.Printf("%s/%s\n", path, *file.Name)
+			fmt.Printf("%s/%s\n", path, file.GetName())
 			continue
 		}
-		fmt.Printf("%s\n", *file.Name)
+
+		fmt.Printf("%s\n", file.GetName())
 	}
+
+	return nil
 }
