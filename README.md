@@ -45,13 +45,13 @@ $ gitnore list
 ## Preview Gitignore File Content
 
 ```
-$ gitnore view gitignore-file-name
+$ gitnore preview gitignore-file-name
 ```
 
 for example:
 
 ```
-$ gitnore view Go
+$ gitnore preview Go
 # Binaries for programs and plugins
 *.exe
 *.exe~
