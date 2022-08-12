@@ -7,7 +7,7 @@ Are you tired of choosing overly bare .gitignore files from Github's interface? 
 ### From Source
 
 ```
-$ go get -u https://github.com/kkirsche/gitnore
+$ go install github.com/kkirsche/gitnore@latest
 ```
 
 ## Usage
